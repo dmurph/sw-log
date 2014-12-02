@@ -1,0 +1,98 @@
+<link href="../paper-fab/paper-fab.html" rel="import">
+<link href="../core-icons/core-icons.html" rel="import">
+<link href="../paper-shadow/paper-shadow.html" rel="import">
+
+<!--
+Element that displays the ServiceWorker status for this page.  Currently it displays whether the page is controlled or not, and the registration for the ServiceWorker that can control this page.  In the future this can enumerate the info for all ServiceWorkers under the current domain.
+##### Example
+    <sw-log></sw-log>
+@element sw-log
+@blurb Element showing ServiceWorker status.
+@status beta
+@homepage http://dmurph.github.io/sw-log
+-->
+<polymer-element name="sw-log" attributes="console verbose">
+  <template>
+    <link rel="stylesheet" href="sw-log.css">
+    <paper-shadow z="1" id="paper-container">
+    <div id="container">
+        <div id="title">
+          <paper-fab id="clear-button" icon="clear" mini on-click="{{clearClicked}}"></paper-fab>
+          <paper-fab id="refresh-button" icon="refresh" mini on-click="{{refreshClicked}}"></paper-fab>
+        </div>
+        <div id="content">
+          <div style="clear: right"></div>
+          <div id="log-wrapper">
+            <div>&nbsp;&nbsp;<b>SeviceWorker Log</b></div>
+            <div id="js-log"> 
+            <template repeat="{{log in logMessages}}">
+              <div>{{log.message}}</div>
+            </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-shadow>
+  </template>
+  <script>
+
+    Polymer({
+      logMessages: [],
+      console: false,
+      verbose: false,
+
+      ready: function() {
+        this.refreshAll();
+      },
+
+      getServiceWorkerDescription: function(worker) {
+        return ['Script: ' + worker.scriptURL, 'State: ' + worker.state];
+      },
+
+      logInternal: function() {
+        if (this.console != false) {
+          console.log.apply(null, arguments);
+        }
+        this.logMessages.push.apply(null, arguments);
+      },
+
+      log: function(serviceWorkerIdentifier, logObjects) {
+        var argsArray = Array.prototype.slice.call(arguments);
+        argsArray.unshift("[ServiceWorker]");
+        this.logInternal(null, argsArray);
+      }
+
+      refreshAll: function() {
+        this.logMessages = [];
+        if (!navigator.serviceWorker) {
+          this.errorText = ['Service Workers are not enabled in this browser.'];
+          return;
+        }
+        var controller = navigator.serviceWorker.controller;
+        if (controller) {
+          this.controlledStyle = 'active';
+          this.controlledTitle = 'Controlled';
+          this.controlledText = ['This page is controlled by a ServiceWorker.'];
+        }
+        var _this = this;
+        navigator.serviceWorker.getRegistration(window.location.pathname)
+            .then(function(registration) {
+              var serviceWorker = null;
+              if (registration.installing) {
+                ser
+              }
+            }, function(why) {
+                _this.errorText = ['Error getting registration for path "' + window.location.pathname + '": ' + why];
+            });
+      },
+
+      clearClicked: function(event, detail, sender) {
+        console.log("clear clicked");
+      },
+
+      refreshClicked: function(event, detail, sender) {
+        this.refreshAll();
+      }
+    });
+  </script>
+</polymer-element>
